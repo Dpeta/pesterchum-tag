@@ -25,16 +25,15 @@ ModuleHeader MOD_HEADER
 	"1.1", /* version */
 	"+pesterchum client tag", /* description */
 	"Shou", /* author */
-	"unrealircd-6", /* module API version */
+	"unrealircd-5", /* module API version */
 	};
 
 /* Variables */
 long CAP_PESTERCHUM_TAG = 0L;
 
 /* Forward declarations */
-int pchum_mtag_is_ok(Client *client, const char *name, const char *value);
-void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, const char *signature);
-int pesterchum_tag_mtag_should_send_to_client(Client *target);
+int pchum_mtag_is_ok(Client *client, char *name, char *value);
+void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, char *signature);
 
 MOD_INIT()
 {
@@ -49,7 +48,6 @@ MOD_INIT()
 	memset(&mtag, 0, sizeof(mtag));
 	mtag.name = "+pesterchum";
 	mtag.is_ok = pchum_mtag_is_ok;
-	mtag.should_send_to_client = pesterchum_tag_mtag_should_send_to_client;
 	mtag.clicap_handler = c;
 	MessageTagHandlerAdd(modinfo->handle, &mtag);
 
@@ -70,12 +68,12 @@ MOD_UNLOAD()
 
 /** This function verifies if the client sending the mtag is permitted to do so.
  */
-int pchum_mtag_is_ok(Client *client, const char *name, const char *value)
+int pchum_mtag_is_ok(Client *client, char *name, char *value)
 {
 	return 1;
 }
 
-void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, const char *signature)
+void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, char *signature)
 {
 	MessageTag *m;
 
@@ -88,12 +86,4 @@ void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_li
 			AddListItem(m, *mtag_list);
 		}
 	}
-}
-
-/** Outgoing filter for this message tag */
-int pesterchum_tag_mtag_should_send_to_client(Client *target)
-{
-	if (HasCapabilityFast(target, CAP_PESTERCHUM_TAG))
-		return 1;
-	return 0;
 }
