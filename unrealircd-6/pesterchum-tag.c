@@ -1,6 +1,6 @@
 /*
  *   Modeled after unrealircd/src/modules/typing-indicator.c 
- *   https://github.com/unrealircd/unrealircd/blob/unreal60_dev/src/modules/typing-indicator.c
+ *   And unrealircd/src/modules/json-log-tag.c 
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,23 +22,35 @@
 ModuleHeader MOD_HEADER
   = {
 	"third/pesterchum-tag", /* name */
-	"1.0", /* version */
+	"1.1", /* version */
 	"+pesterchum client tag", /* description */
 	"Shou", /* author */
 	"unrealircd-6", /* module API version */
 	};
 
+/* Variables */
+long CAP_PESTERCHUM_TAG = 0L;
+
+/* Forward declarations */
 int pchum_mtag_is_ok(Client *client, const char *name, const char *value);
 void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, const char *signature);
+int pesterchum_tag_mtag_should_send_to_client(Client *target);
 
 MOD_INIT()
 {
+	ClientCapabilityInfo cap;
+	ClientCapability *c;
 	MessageTagHandlerInfo mtag;
 
+	memset(&cap, 0, sizeof(cap));
+	cap.name = "pesterchum-tag";
+	c = ClientCapabilityAdd(modinfo->handle, &cap, &CAP_PESTERCHUM_TAG);
+	
 	memset(&mtag, 0, sizeof(mtag));
 	mtag.name = "+pesterchum";
 	mtag.is_ok = pchum_mtag_is_ok;
-	mtag.flags = MTAG_HANDLER_FLAGS_NO_CAP_NEEDED;
+	mtag.should_send_to_client = pesterchum_tag_mtag_should_send_to_client;
+	mtag.clicap_handler = c;
 	MessageTagHandlerAdd(modinfo->handle, &mtag);
 
 	HookAddVoid(modinfo->handle, HOOKTYPE_NEW_MESSAGE, 0, mtag_add_pchum);
@@ -76,4 +88,12 @@ void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_li
 			AddListItem(m, *mtag_list);
 		}
 	}
+}
+
+/** Outgoing filter for this message tag */
+int pesterchum_tag_mtag_should_send_to_client(Client *target)
+{
+	if (HasCapabilityFast(target, CAP_PESTERCHUM_TAG))
+		return 1;
+	return 0;
 }
