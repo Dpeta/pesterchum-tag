@@ -28,22 +28,20 @@ ModuleHeader MOD_HEADER
 	"unrealircd-6", /* module API version */
 	};
 
-int ti_mtag_is_ok(Client *client, const char *name, const char *value);
-void mtag_add_ti(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, const char *signature);
+int pchum_mtag_is_ok(Client *client, const char *name, const char *value);
+void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, const char *signature);
 
 MOD_INIT()
 {
 	MessageTagHandlerInfo mtag;
 
-	MARK_AS_OFFICIAL_MODULE(modinfo);
-
 	memset(&mtag, 0, sizeof(mtag));
 	mtag.name = "+pesterchum";
-	mtag.is_ok = ti_mtag_is_ok;
+	mtag.is_ok = pchum_mtag_is_ok;
 	mtag.flags = MTAG_HANDLER_FLAGS_NO_CAP_NEEDED;
 	MessageTagHandlerAdd(modinfo->handle, &mtag);
 
-	HookAddVoid(modinfo->handle, HOOKTYPE_NEW_MESSAGE, 0, mtag_add_ti);
+	HookAddVoid(modinfo->handle, HOOKTYPE_NEW_MESSAGE, 0, mtag_add_pchum);
 
 	return MOD_SUCCESS;
 }
@@ -60,12 +58,12 @@ MOD_UNLOAD()
 
 /** This function verifies if the client sending the mtag is permitted to do so.
  */
-int ti_mtag_is_ok(Client *client, const char *name, const char *value)
+int pchum_mtag_is_ok(Client *client, const char *name, const char *value)
 {
 	return 1;
 }
 
-void mtag_add_ti(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, const char *signature)
+void mtag_add_pchum(Client *client, MessageTag *recv_mtags, MessageTag **mtag_list, const char *signature)
 {
 	MessageTag *m;
 
